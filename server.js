@@ -62,7 +62,6 @@ app.use('/auth', authController);
 app.use(isSignedIn);
 app.use("/users/:userId/recipes", recipesController);
 app.use('/ingredients', ingredientsController);
-// This middleware will redirect a user who isn't signed in, to the /auth/sing-in route
 
 app.listen(port, () => {
   console.log(`The express app is ready on port ${port}!`);
