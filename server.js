@@ -1,48 +1,68 @@
-const dotenv = require('dotenv');
+import dotenv from "dotenv";
 dotenv.config();
-const express = require('express');
+import express from "express";
 const app = express();
-const mongoose = require('mongoose');
-const methodOverride = require('method-override');
-const morgan = require('morgan');
-const session = require('express-session');
+import methodOverride from "method-override";
+import morgan from "morgan";
+import session from "express-session";
+import path from "path";
 
-const authController = require('./controllers/auth.js');
+import "./db/connection.js";
+
+
+
+import authController from "./controllers/auth.js";
+import recipesController from './controllers/recipes.js';
+import ingredientsController from './controllers/ingredients.js';
+
+
+import { isSignedIn } from "./middleware/isSignedIn.js";
+
+
+// server.js
+
+
+
+
+import { passUserToView } from "./middleware/passToView.js";
+import { fileURLToPath } from "url";
 
 const port = process.env.PORT ? process.env.PORT : '3000';
 
-mongoose.connect(process.env.MONGODB_URI);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(__dirname));
 
-mongoose.connection.on('connected', () => {
-  console.log(`Connected to MongoDB ${mongoose.connection.name}.`);
-});
 
+app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
-app.use(methodOverride('_method'));
-// app.use(morgan('dev'));
+app.use(methodOverride("_method"));
+app.use(morgan("dev"));
 app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-  })
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+    })
 );
 
-app.get('/', (req, res) => {
-  res.render('index.ejs', {
-    user: req.session.user,
-  });
+app.get("/", (req, res) => {
+    if (req.session.user) {
+        res.redirect(`users/${req.session.user._id}/recipes`);
+    } else {
+        res.render("index.ejs", {
+            user: req.session.user,
+        });
+    }
 });
 
-app.get('/vip-lounge', (req, res) => {
-  if (req.session.user) {
-    res.send(`Welcome to the party ${req.session.user.username}.`);
-  } else {
-    res.send('Sorry, no guests allowed.');
-  }
-});
 
 app.use('/auth', authController);
+// app.use(passUserToView);
+app.use(isSignedIn);
+app.use("/users/:userId/recipes", recipesController);
+app.use('/ingredients', ingredientsController);
+// This middleware will redirect a user who isn't signed in, to the /auth/sing-in route
 
 app.listen(port, () => {
   console.log(`The express app is ready on port ${port}!`);
