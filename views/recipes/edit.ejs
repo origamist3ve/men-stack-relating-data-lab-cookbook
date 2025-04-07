@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<h1>Edit Recipe: <%= recipe.name %></h1>
+<form action="/recipes/<%= recipe._id %>?_method=PUT" method="POST">
+    <label for="name">Recipe Name:</label>
+    <input type="text" name="name" id="name" value="<%= recipe.name %>" required>
+
+    <label for="instructions">Instructions:</label>
+    <textarea name="instructions" id="instructions" required><%= recipe.instructions %></textarea>
+
+    <!-- Optionally render ingredient inputs; consider using checkboxes or a multiple select -->
+    <label for="ingredients">Ingredients (comma-separated):</label>
+    <input type="text" name="ingredients" id="ingredients"
+           value="<%= recipe.ingredients.map(i => i.name).join(', ') %>">
+
+    <button type="submit">Update Recipe</button>
+</form>
+
+</body>
+</html>

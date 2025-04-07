@@ -14,7 +14,6 @@ router.get('/', async (req, res) => {
     try{
         const user = await User.findById(req.session.user).populate('recipes');
 
-
         res.render('recipes/index.ejs', {
             user: req.session.user,
             recipes: user.recipes,
@@ -106,6 +105,43 @@ router.get("/:recipeId", async (req, res) => {
         res.redirect("/");
     }
 });
+
+
+router.delete("/:recipeId", async (req, res) => {
+    try {
+        const { recipeId } = req.params;
+        // Delete the recipe document
+        await Recipe.deleteOne({ _id: recipeId });
+
+        // Optionally, remove the recipe reference from the user document
+        const user = await User.findById(req.session.user._id);
+        user.recipes = user.recipes.filter(rid => rid.toString() !== recipeId);
+        await user.save();
+
+        res.redirect("/");
+    } catch (error) {
+        console.error(error);
+        res.redirect("/");
+    }
+});
+
+router.get("/:recipeId/edit", async (req, res) => {
+    try {
+        const { recipeId } = req.params;
+        const recipe = await Recipe.findById(recipeId);
+        if (!recipe) {
+            console.error("Recipe not found");
+            return res.redirect("/");
+        }
+        res.locals.recipe = recipe;
+        res.render("recipes/edit", { user: req.session.user });
+    } catch (error) {
+        console.error(error);
+        res.redirect("/");
+    }
+});
+
+
 
 
 

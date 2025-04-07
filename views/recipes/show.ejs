@@ -18,6 +18,11 @@
         <% }) %>
     </ul>
 <% } %>
+<form action="/users/:userId/recipes/<%= recipe._id %>?_method=DELETE" method="POST">
+    <button type="submit">Delete</button>
+</form>
+
+
 <a href="/users/:userId/recipes">Back to recipes</a>
 
 
